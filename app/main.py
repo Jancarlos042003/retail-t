@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 import app.models.registry  # noqa: F401 - registers all models with SQLAlchemy
+from app.core.middleware import setup_middleware
 from app.routes import (
     categories,
     payment_methods,
@@ -12,6 +13,8 @@ from app.routes import (
 )
 
 app = FastAPI()
+
+setup_middleware(app)
 
 app.include_router(categories.router)
 app.include_router(products.router)
