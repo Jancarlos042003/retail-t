@@ -34,9 +34,13 @@ class Product(Base):
     )
 
     category: Mapped["Category"] = relationship(back_populates="products")
-    prices: Mapped[list["ProductPrice"]] = relationship(back_populates="product")
-    stock_level: Mapped["StockLevel | None"] = relationship(back_populates="product")
+    prices: Mapped[list["ProductPrice"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
+    stock_level: Mapped["StockLevel | None"] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
     stock_movements: Mapped[list["StockMovement"]] = relationship(
-        back_populates="product"
+        back_populates="product", cascade="all, delete-orphan"
     )
     sale_items: Mapped[list["SaleItem"]] = relationship(back_populates="product")

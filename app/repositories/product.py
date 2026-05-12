@@ -1,6 +1,8 @@
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -37,7 +39,14 @@ class ProductRepository(BaseRepository[Product]):
     async def create(self, data: ProductCreate) -> Product:
         product = Product(**data.model_dump())
         self.session.add(product)
-        await self.session.commit()
+        try:
+            await self.session.commit()
+        except IntegrityError:
+            await self.session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Datos inválidos: verifica que la categoría exista",
+            )
         await self.session.refresh(product)
         return product
 

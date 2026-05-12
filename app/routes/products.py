@@ -44,7 +44,7 @@ async def create_product(
     barcode: Annotated[str, Form()],
     name: Annotated[str, Form()],
     category_id: Annotated[UUID, Form()],
-    min_stock: Annotated[int, Form()] = 0,
+    min_stock: Annotated[int, Form(ge=0)] = 0,
     is_active: Annotated[bool, Form()] = True,
     image: Annotated[UploadFile | None, File()] = None,
     service: ServiceDep = ...,
