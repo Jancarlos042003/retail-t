@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class StorageService(ABC):
+class StorageBackend(ABC):
     @abstractmethod
     def upload(self, data: bytes, destination: str) -> str: ...
 

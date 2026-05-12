@@ -1,12 +1,14 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.infrastructure.storage.gcs import GCSStorageBackend
 from app.schemas.product import ProductCreate, ProductRead, ProductReadWithCategory, ProductUpdate
 from app.services.product import ProductService
+from app.services.storage import BUCKET_NAME, StorageService
 
 router = APIRouter(prefix="/products", tags=["Productos"])
 
@@ -18,6 +20,10 @@ def get_service(session: SessionDep) -> ProductService:
 
 
 type ServiceDep = Annotated[ProductService, Depends(get_service)]
+
+
+def get_storage_service() -> StorageService:
+    return StorageService(backend=GCSStorageBackend(bucket=BUCKET_NAME))
 
 
 @router.get("/", response_model=list[ProductReadWithCategory])
@@ -34,7 +40,26 @@ async def get_product(id: UUID, service: ServiceDep) -> ProductReadWithCategory:
 
 
 @router.post("/", response_model=ProductRead, status_code=status.HTTP_201_CREATED)
-async def create_product(data: ProductCreate, service: ServiceDep) -> ProductRead:
+async def create_product(
+    barcode: Annotated[str, Form()],
+    name: Annotated[str, Form()],
+    category_id: Annotated[UUID, Form()],
+    min_stock: Annotated[int, Form()] = 0,
+    is_active: Annotated[bool, Form()] = True,
+    image: Annotated[UploadFile | None, File()] = None,
+    service: ServiceDep = ...,
+    storage: Annotated[StorageService, Depends(get_storage_service)] = ...,
+) -> ProductRead:
+    image_url = await storage.upload_image(image) if image is not None else None
+
+    data = ProductCreate(
+        barcode=barcode,
+        name=name,
+        category_id=category_id,
+        min_stock=min_stock,
+        is_active=is_active,
+        image_url=image_url,
+    )
     return await service.create(data)
 
 

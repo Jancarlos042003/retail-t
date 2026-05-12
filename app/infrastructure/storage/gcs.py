@@ -1,9 +1,9 @@
 from google.cloud import storage
 
-from app.services.storage.base import StorageService
+from app.infrastructure.storage.base import StorageBackend
 
 
-class GCSStorageService(StorageService):
+class GCSStorageBackend(StorageBackend):
     def __init__(self, bucket: str):
         self._client = storage.Client()
         self._bucket = bucket
