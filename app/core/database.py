@@ -4,12 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 
 from app.core.config import settings
 
-DATABASE_URL = (
-    f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASSWORD}"
-    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DATABASE}"
-)
+DATABASE_URL = settings.db_url
 
-engine = create_async_engine(DATABASE_URL, echo=False)
+# Supabase requiere SSL; asyncpg lo recibe como connect_arg, no en la URL
+connect_args = {"ssl": "require"} if settings.DATABASE_URL else {}
+
+engine = create_async_engine(DATABASE_URL, echo=False, connect_args=connect_args)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
