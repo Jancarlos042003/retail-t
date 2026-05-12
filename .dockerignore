@@ -1,0 +1,50 @@
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Tests & QA
+tests/
+.pytest_cache/
+.hypothesis/
+htmlcov/
+.coverage
+coverage.xml
+
+# Git
+.git/
+.gitignore
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+
+# Tooling & IDE
+.claude/
+.agents/
+.mcp.json
+skills-lock.json
+.vscode/
+.idea/
+
+# Docs & Misc
+README.md
+*.md
