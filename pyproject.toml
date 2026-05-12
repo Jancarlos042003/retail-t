@@ -17,3 +17,6 @@ dependencies = [
     "ruff>=0.15.12",
     "sqlalchemy[asyncio]>=2.0",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"app/main.py" = ["F401"]
