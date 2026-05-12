@@ -11,4 +11,4 @@ WORKDIR /app
 RUN uv sync --frozen --no-cache --no-group dev
 
 # Run the application.
-CMD ["/bin/sh", "-c", "/app/.venv/bin/fastapi run app/main.py --port ${PORT:-8080} --host 0.0.0.0"]
+CMD ["/bin/sh", "-c", "/app/.venv/bin/uvicorn app.main:app --port ${PORT:-8080} --host 0.0.0.0"]
