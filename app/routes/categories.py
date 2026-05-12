@@ -10,14 +10,14 @@ from app.services.category import CategoryService
 
 router = APIRouter(prefix="/categories", tags=["Categorías"])
 
-SessionDep = Annotated[AsyncSession, Depends(get_db)]
+type SessionDep = Annotated[AsyncSession, Depends(get_db)]
 
 
 def get_service(session: SessionDep) -> CategoryService:
     return CategoryService(session)
 
 
-ServiceDep = Annotated[CategoryService, Depends(get_service)]
+type ServiceDep = Annotated[CategoryService, Depends(get_service)]
 
 
 @router.get("/", response_model=list[CategoryRead])
@@ -36,7 +36,9 @@ async def create_category(data: CategoryCreate, service: ServiceDep) -> Category
 
 
 @router.patch("/{id}", response_model=CategoryRead)
-async def update_category(id: UUID, data: CategoryUpdate, service: ServiceDep) -> CategoryRead:
+async def update_category(
+    id: UUID, data: CategoryUpdate, service: ServiceDep
+) -> CategoryRead:
     return await service.update(id, data)
 
 

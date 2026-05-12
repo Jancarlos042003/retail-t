@@ -10,14 +10,14 @@ from app.services.product import ProductService
 
 router = APIRouter(prefix="/products", tags=["Productos"])
 
-SessionDep = Annotated[AsyncSession, Depends(get_db)]
+type SessionDep = Annotated[AsyncSession, Depends(get_db)]
 
 
 def get_service(session: SessionDep) -> ProductService:
     return ProductService(session)
 
 
-ServiceDep = Annotated[ProductService, Depends(get_service)]
+type ServiceDep = Annotated[ProductService, Depends(get_service)]
 
 
 @router.get("/", response_model=list[ProductReadWithCategory])
