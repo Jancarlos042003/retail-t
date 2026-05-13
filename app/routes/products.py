@@ -9,9 +9,9 @@ from app.infrastructure.storage.gcs import GCSStorageBackend
 from app.schemas.product import (
     ProductBarcodeRead,
     ProductCreate,
+    ProductListResponse,
     ProductRead,
     ProductReadWithCategory,
-    ProductSearchResponse,
     ProductUpdate,
 )
 from app.services.product import ProductService
@@ -33,14 +33,22 @@ def get_storage_service() -> StorageService:
     return StorageService(backend=GCSStorageBackend(bucket=BUCKET_NAME))
 
 
-@router.get("/", response_model=list[ProductReadWithCategory])
+@router.get("/", response_model=ProductListResponse)
 async def list_products(
     service: ServiceDep,
-    is_active: Annotated[
-        bool | None, Query(description="Filtrar por estado activo/inactivo")
-    ] = None,
-) -> list[ProductReadWithCategory]:
-    return await service.get_all(is_active=is_active)
+    name: Annotated[str | None, Query(description="Búsqueda por nombre (parcial, sin distinción de mayúsculas)")] = None,
+    category_id: Annotated[UUID | None, Query(description="Filtrar por ID de categoría")] = None,
+    is_active: Annotated[bool | None, Query(description="Filtrar por estado activo/inactivo")] = None,
+    limit: Annotated[int, Query(ge=1, le=100, description="Máximo de resultados por página (default 25)")] = 25,
+    offset: Annotated[int, Query(ge=0, description="Desplazamiento para paginación")] = 0,
+) -> ProductListResponse:
+    return await service.get_all(
+        name=name,
+        category_id=category_id,
+        is_active=is_active,
+        limit=limit,
+        offset=offset,
+    )
 
 
 @router.get("/barcode/{barcode}", response_model=ProductBarcodeRead)
@@ -48,26 +56,6 @@ async def get_product_by_barcode(
     barcode: str, service: ServiceDep
 ) -> ProductBarcodeRead:
     return await service.get_by_barcode(barcode)
-
-
-@router.get("/search", response_model=ProductSearchResponse)
-async def search_products(
-    service: ServiceDep,
-    name: Annotated[str | None, Query(description="Búsqueda por nombre (parcial, sin distinción de mayúsculas)")] = None,
-    barcode: Annotated[str | None, Query(description="Búsqueda exacta por código de barras")] = None,
-    category_id: Annotated[UUID | None, Query(description="Filtrar por ID de categoría")] = None,
-    is_active: Annotated[bool | None, Query(description="Filtrar por estado activo/inactivo")] = None,
-    limit: Annotated[int, Query(ge=1, le=100, description="Máximo de resultados por página (default 25)")] = 25,
-    offset: Annotated[int, Query(ge=0, description="Desplazamiento para paginación")] = 0,
-) -> ProductSearchResponse:
-    return await service.search(
-        name=name,
-        barcode=barcode,
-        category_id=category_id,
-        is_active=is_active,
-        limit=limit,
-        offset=offset,
-    )
 
 
 @router.get("/{id}", response_model=ProductReadWithCategory)

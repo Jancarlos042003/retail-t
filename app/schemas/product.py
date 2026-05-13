@@ -136,25 +136,10 @@ class ProductBarcodeRead(BaseModel):
     stock: int = Field(..., description="Cantidad disponible en stock")
 
 
-class ProductSearchItem(BaseModel):
-    """Item de resultado de búsqueda. Incluye categoría, precio de venta y stock actual."""
+class ProductListResponse(BaseModel):
+    """Resultado paginado de listado/filtrado de productos."""
 
-    model_config = ConfigDict(from_attributes=True)
-
-    id: UUID
-    name: str
-    category: CategoryRead
-    barcode: str
-    stock: int
-    min_stock: int
-    sale_price: Decimal | None
-    is_active: bool
-
-
-class ProductSearchResponse(BaseModel):
-    """Resultado paginado de búsqueda de productos."""
-
-    items: list[ProductSearchItem]
+    items: list[ProductReadWithCategory]
     total: int = Field(..., description="Total de productos que coinciden con los filtros")
     total_pages: int = Field(..., description="Total de páginas según el limit aplicado")
     current_page: int = Field(..., description="Página actual (1-indexado)")

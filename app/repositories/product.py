@@ -23,24 +23,10 @@ class ProductRepository(BaseRepository[Product]):
         )
         return result.scalar_one_or_none()
 
-    async def get_all(self, *, is_active: bool | None = None) -> list[Product]:
-        query = select(Product).options(selectinload(Product.category))
-        if is_active is not None:
-            query = query.where(Product.is_active == is_active)
-        result = await self.session.execute(query)
-        return list(result.scalars().all())
-
-    async def get_by_barcode(self, barcode: str) -> Product | None:
-        result = await self.session.execute(
-            select(Product).where(Product.barcode == barcode)
-        )
-        return result.scalar_one_or_none()
-
-    async def search(
+    async def get_all(
         self,
         *,
         name: str | None = None,
-        barcode: str | None = None,
         category_id: UUID | None = None,
         is_active: bool | None = None,
         limit: int = 25,
@@ -49,8 +35,6 @@ class ProductRepository(BaseRepository[Product]):
         filters = []
         if name is not None:
             filters.append(Product.name.ilike(f"%{name}%"))
-        if barcode is not None:
-            filters.append(Product.barcode == barcode)
         if category_id is not None:
             filters.append(Product.category_id == category_id)
         if is_active is not None:
@@ -69,6 +53,12 @@ class ProductRepository(BaseRepository[Product]):
             .limit(limit)
         )
         return list(result.scalars().all()), total
+
+    async def get_by_barcode(self, barcode: str) -> Product | None:
+        result = await self.session.execute(
+            select(Product).where(Product.barcode == barcode)
+        )
+        return result.scalar_one_or_none()
 
     async def create(self, data: ProductCreate) -> Product:
         product = Product(**data.model_dump())

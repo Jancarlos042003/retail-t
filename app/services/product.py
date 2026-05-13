@@ -7,14 +7,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.product import ProductRepository
 from app.repositories.product_price import ProductPriceRepository
 from app.repositories.stock import StockLevelRepository
-from app.schemas.category import CategoryRead
 from app.schemas.product import (
     ProductBarcodeRead,
     ProductCreate,
+    ProductListResponse,
     ProductRead,
     ProductReadWithCategory,
-    ProductSearchItem,
-    ProductSearchResponse,
     ProductUpdate,
 )
 
@@ -53,49 +51,25 @@ class ProductService:
         )
 
     async def get_all(
-        self, *, is_active: bool | None = None
-    ) -> list[ProductReadWithCategory]:
-        products = await self.repo.get_all(is_active=is_active)
-        return [ProductReadWithCategory.model_validate(p) for p in products]
-
-    async def search(
         self,
         *,
         name: str | None = None,
-        barcode: str | None = None,
         category_id: UUID | None = None,
         is_active: bool | None = None,
         limit: int = 25,
         offset: int = 0,
-    ) -> ProductSearchResponse:
-        products, total = await self.repo.search(
+    ) -> ProductListResponse:
+        products, total = await self.repo.get_all(
             name=name,
-            barcode=barcode,
             category_id=category_id,
             is_active=is_active,
             limit=limit,
             offset=offset,
         )
-        items = []
-        for product in products:
-            price = await self.price_repo.get_current(product.id)
-            stock = await self.stock_repo.get_by_product(product.id)
-            items.append(
-                ProductSearchItem(
-                    id=product.id,
-                    name=product.name,
-                    category=CategoryRead.model_validate(product.category),
-                    barcode=product.barcode,
-                    stock=stock.quantity if stock else 0,
-                    min_stock=product.min_stock,
-                    sale_price=price.selling_price if price else None,
-                    is_active=product.is_active,
-                )
-            )
         total_pages = math.ceil(total / limit) if total > 0 else 1
         current_page = (offset // limit) + 1
-        return ProductSearchResponse(
-            items=items,
+        return ProductListResponse(
+            items=[ProductReadWithCategory.model_validate(p) for p in products],
             total=total,
             total_pages=total_pages,
             current_page=current_page,
