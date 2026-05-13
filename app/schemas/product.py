@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -105,3 +106,31 @@ class ProductReadWithCategory(ProductRead):
     )
 
     category: CategoryRead = Field(..., description="Información de la categoría del producto")
+
+
+class ProductBarcodeRead(BaseModel):
+    """Respuesta al buscar un producto por código de barras. Incluye precio vigente y stock actual."""
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "id": _PRODUCT_ID,
+                "barcode": "7501234567890",
+                "name": "Inca Kola 500ml",
+                "image_url": "https://storage.googleapis.com/bodega/inca-kola-500ml.jpg",
+                "min_stock": 12,
+                "is_active": True,
+                "selling_price": 2.50,
+                "stock": 48,
+            }
+        }
+    )
+
+    id: UUID = Field(..., description="Identificador único del producto")
+    barcode: str = Field(..., description="Código de barras del producto")
+    name: str = Field(..., description="Nombre del producto")
+    image_url: str | None = Field(None, description="URL de la imagen")
+    min_stock: int = Field(..., description="Stock mínimo configurado")
+    is_active: bool = Field(..., description="Si el producto está disponible para la venta")
+    selling_price: Decimal | None = Field(None, description="Precio de venta vigente")
+    stock: int = Field(..., description="Cantidad disponible en stock")

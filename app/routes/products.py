@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.infrastructure.storage.gcs import GCSStorageBackend
 from app.schemas.product import (
+    ProductBarcodeRead,
     ProductCreate,
     ProductRead,
     ProductReadWithCategory,
@@ -41,10 +42,10 @@ async def list_products(
     return await service.get_all(is_active=is_active)
 
 
-@router.get("/barcode/{barcode}", response_model=ProductReadWithCategory)
+@router.get("/barcode/{barcode}", response_model=ProductBarcodeRead)
 async def get_product_by_barcode(
     barcode: str, service: ServiceDep
-) -> ProductReadWithCategory:
+) -> ProductBarcodeRead:
     return await service.get_by_barcode(barcode)
 
 
