@@ -141,6 +141,7 @@ class ProductSearchItem(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+    id: UUID
     name: str
     category: CategoryRead
     barcode: str
@@ -155,5 +156,10 @@ class ProductSearchResponse(BaseModel):
 
     items: list[ProductSearchItem]
     total: int = Field(..., description="Total de productos que coinciden con los filtros")
+    total_pages: int = Field(..., description="Total de páginas según el limit aplicado")
+    current_page: int = Field(..., description="Página actual (1-indexado)")
     limit: int = Field(..., description="Máximo de resultados por página")
     offset: int = Field(..., description="Desplazamiento desde el primer resultado")
+    # TODO: el conteo total se recalcula en cada petición. A futuro considerar
+    #       cachear el resultado del count o hacerlo opcional (param include_count=false)
+    #       cuando el catálogo crezca significativamente.

@@ -1,3 +1,4 @@
+import math
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -81,6 +82,7 @@ class ProductService:
             stock = await self.stock_repo.get_by_product(product.id)
             items.append(
                 ProductSearchItem(
+                    id=product.id,
                     name=product.name,
                     category=CategoryRead.model_validate(product.category),
                     barcode=product.barcode,
@@ -90,7 +92,16 @@ class ProductService:
                     is_active=product.is_active,
                 )
             )
-        return ProductSearchResponse(items=items, total=total, limit=limit, offset=offset)
+        total_pages = math.ceil(total / limit) if total > 0 else 1
+        current_page = (offset // limit) + 1
+        return ProductSearchResponse(
+            items=items,
+            total=total,
+            total_pages=total_pages,
+            current_page=current_page,
+            limit=limit,
+            offset=offset,
+        )
 
     async def create(self, data: ProductCreate) -> ProductRead:
         existing = await self.repo.get_by_barcode(data.barcode)
