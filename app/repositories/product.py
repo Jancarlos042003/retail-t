@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -35,6 +35,40 @@ class ProductRepository(BaseRepository[Product]):
             select(Product).where(Product.barcode == barcode)
         )
         return result.scalar_one_or_none()
+
+    async def search(
+        self,
+        *,
+        name: str | None = None,
+        barcode: str | None = None,
+        category_id: UUID | None = None,
+        is_active: bool | None = None,
+        limit: int = 25,
+        offset: int = 0,
+    ) -> tuple[list[Product], int]:
+        filters = []
+        if name is not None:
+            filters.append(Product.name.ilike(f"%{name}%"))
+        if barcode is not None:
+            filters.append(Product.barcode == barcode)
+        if category_id is not None:
+            filters.append(Product.category_id == category_id)
+        if is_active is not None:
+            filters.append(Product.is_active == is_active)
+
+        count_result = await self.session.execute(
+            select(func.count(Product.id)).where(*filters)
+        )
+        total = count_result.scalar_one()
+
+        result = await self.session.execute(
+            select(Product)
+            .options(selectinload(Product.category))
+            .where(*filters)
+            .offset(offset)
+            .limit(limit)
+        )
+        return list(result.scalars().all()), total
 
     async def create(self, data: ProductCreate) -> Product:
         product = Product(**data.model_dump())

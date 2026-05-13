@@ -134,3 +134,26 @@ class ProductBarcodeRead(BaseModel):
     is_active: bool = Field(..., description="Si el producto está disponible para la venta")
     selling_price: Decimal | None = Field(None, description="Precio de venta vigente")
     stock: int = Field(..., description="Cantidad disponible en stock")
+
+
+class ProductSearchItem(BaseModel):
+    """Item de resultado de búsqueda. Incluye categoría, precio de venta y stock actual."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    name: str
+    category: CategoryRead
+    barcode: str
+    stock: int
+    min_stock: int
+    sale_price: Decimal | None
+    is_active: bool
+
+
+class ProductSearchResponse(BaseModel):
+    """Resultado paginado de búsqueda de productos."""
+
+    items: list[ProductSearchItem]
+    total: int = Field(..., description="Total de productos que coinciden con los filtros")
+    limit: int = Field(..., description="Máximo de resultados por página")
+    offset: int = Field(..., description="Desplazamiento desde el primer resultado")
