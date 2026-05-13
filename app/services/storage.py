@@ -5,7 +5,7 @@ from fastapi import HTTPException, UploadFile, status
 from app.infrastructure.storage.base import StorageBackend
 
 BUCKET_NAME = "productos-image"
-VALID_EXTENSIONS = {".jpg", ".jpeg", ".webp"}
+VALID_EXTENSIONS = {".jpg", ".jpeg", ".webp", ".png"}
 
 
 class StorageService:
@@ -13,6 +13,12 @@ class StorageService:
         self.backend = backend
 
     async def upload_image(self, file: UploadFile) -> str:
+        if not file.filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El archivo no tiene nombre",
+            )
+
         ext = "." + file.filename.rsplit(".", 1)[-1].lower()
 
         if ext not in VALID_EXTENSIONS:
