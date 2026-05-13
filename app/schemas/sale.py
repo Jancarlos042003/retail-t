@@ -25,6 +25,7 @@ class SalesTransactionCreate(BaseModel):
         json_schema_extra={
             "example": {
                 "payment_method_id": _PAYMENT_ID,
+                "total_amount": 7.50,
                 "items": [
                     {"product_id": _PRODUCT_ID, "quantity": 3},
                 ],
@@ -33,6 +34,7 @@ class SalesTransactionCreate(BaseModel):
     )
 
     payment_method_id: UUID = Field(..., description="ID del método de pago utilizado")
+    total_amount: Decimal = Field(..., gt=0, description="Total calculado por el cliente (se verifica contra el cálculo del servidor)")
     items: list[SaleItemCreate] = Field(..., min_length=1, description="Productos de la venta (mínimo 1)")
 
 
