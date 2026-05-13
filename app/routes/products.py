@@ -41,6 +41,13 @@ async def list_products(
     return await service.get_all(is_active=is_active)
 
 
+@router.get("/barcode/{barcode}", response_model=ProductReadWithCategory)
+async def get_product_by_barcode(
+    barcode: str, service: ServiceDep
+) -> ProductReadWithCategory:
+    return await service.get_by_barcode(barcode)
+
+
 @router.get("/{id}", response_model=ProductReadWithCategory)
 async def get_product(id: UUID, service: ServiceDep) -> ProductReadWithCategory:
     return await service.get_by_id(id)

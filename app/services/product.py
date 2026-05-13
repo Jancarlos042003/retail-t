@@ -24,6 +24,14 @@ class ProductService:
             )
         return ProductReadWithCategory.model_validate(product)
 
+    async def get_by_barcode(self, barcode: str) -> ProductReadWithCategory:
+        product = await self.repo.get_by_barcode(barcode)
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Producto no encontrado"
+            )
+        return ProductReadWithCategory.model_validate(product)
+
     async def get_all(
         self, *, is_active: bool | None = None
     ) -> list[ProductReadWithCategory]:
